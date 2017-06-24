@@ -37,7 +37,7 @@ release-it 0.8.3
 release-it 2.0.0-rc.3
 ```
 
-Create a pre-release using `prelease`, `prepatch`, `preminor`, or `premajor`:
+Create a pre-release using `prerelease`, `prepatch`, `preminor`, or `premajor`:
 
 ```bash
 release-it premajor --prereleaseId="beta"
@@ -109,7 +109,7 @@ Here is the full list of settings:
   "increment": "patch",
   "prereleaseId": null,
   "buildCommand": false,
-  "changelogCommand": "git log --pretty=format:'* %s (%h)' [REV_RANGE]",
+  "changelogCommand": "git log --pretty=format:\"* %s (%h)\" [REV_RANGE]",
   "requireCleanWorkingDir": false,
   "src": {
     "commitMessage": "Release %s",
@@ -118,7 +118,8 @@ Here is the full list of settings:
     "pushRepo": null,
     "beforeStartCommand": false,
     "beforeStageCommand": false,
-    "afterReleaseCommand": false
+    "afterReleaseCommand": false,
+    "githubAssets": false
   },
   "dist": {
     "repo": false,
@@ -130,7 +131,8 @@ Here is the full list of settings:
     "tagName": "%s",
     "tagAnnotation": "Release %s",
     "beforeStageCommand": false,
-    "afterReleaseCommand": false
+    "afterReleaseCommand": false,
+    "githubAssets": false
   },
   "npm": {
     "publish": false,
