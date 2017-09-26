@@ -3,25 +3,31 @@ layout: index
 type: project
 title: release-it
 ---
-# Release It!
+# Release It! 🚀
 
-Interactive release tool for Git repositories. Options: run build command first, release to distribution repository (or branch), create GitHub release, publish to npm.
+CLI release tool for Git repos and npm packages.
 
-Automatically bump version, commit, tag, push, done.
+**Release It!** automates the tedious tasks of software releases:
 
-Here's an extended article about [Using Release It!](https://medium.com/@webprolific/using-release-it-60b96515c073)
+<img align="right" src="./assets/release-it.gif?raw=true" height="148px">
 
-![Release-It](https://webpro.github.com/release-it/Release-It.gif)
+* Execute build commands
+* Bump version (in e.g. `package.json`)
+* Generate changelog
+* Git commit, tag, push
+* [Create release at GitHub](#github-release)
+* [Upload assets to GitHub release](#release-assets)
+* Publish to npm
+* [Manage pre-releases](#manage-pre-releases)
+* [Push build artefacts to a separate repository or branch](#distribution-repository)
 
-Obviously, **Release It** has released itself. Cool, heh?! There's also a [Grunt plugin](https://github.com/webpro/grunt-release-it).
-
-## Install
+## 💾 Installation
 
 ```bash
-npm install release-it -g
+npm install -g release-it
 ```
 
-## Usage
+## ▶️ Usage
 
 Release a new patch (increments from e.g. `1.0.4` to `1.0.5`):
 
@@ -34,7 +40,6 @@ Release a patch, minor, major, or specific version:
 ```bash
 release-it minor
 release-it 0.8.3
-release-it 2.0.0-rc.3
 ```
 
 Create a pre-release using `prerelease`, `prepatch`, `preminor`, or `premajor`:
@@ -54,138 +59,65 @@ You can also do a "dry run", which won't write/touch anything, but does output t
 release-it --dry-run
 ```
 
-For automation and CI purposes, you can use the "non-interactive" mode:
+## ⚙️ Configuration
 
-```bash
-release-it --non-interactive
-```
+Out of the box, release-it has sane defaults, and plenty of options to configure it.
 
-## Configuration
+All [default settings](conf/release-it.json) can be overridden with a config file. Put a `.release-it.json` file in the project root, and it will be picked up. You can use `--config` if you want to use another path for this file.
 
-**Release It** can do a lot out-of-the-box, but has plenty of options to configure it. The basics:
-
-```
-$ release-it --help
-Release It! v2.7.0
-
-Usage: release <increment> [options]
-
-Use e.g. "release minor" directly as shorthand for "release --increment=minor".
-
-Options:
-  -c, --config           Path to local configuration options [default: ".release.json"]                          
-  -d, --dry-run          Do not touch or write anything, but show the commands and interactivity                 
-  -e, --debug            Output exceptions                                                                       
-  -f, --force            Force tagging with Git                                                                  
-  -h, --help             Print help                                                                              
-  -i, --increment        Increment "major", "minor", "patch", or "pre*" version; or specify version [default: "patch"]
-  -m, --message          Commit message [default: "Release %s"]
-  -n, --non-interactive  No interaction (assume default answers to questions)                                    
-      --prereleaseId     Identifier for pre-releases (e.g. "beta" in "1.0.0-beta.1")
-  -p, --npm.publish      Auto-publish to npm (only relevant in --non-interactive mode)
-      --npm.tag          Register published package with given tag (default: "latest")
-  -v, --version          Print version number                                                                    
-  -V, --verbose          Verbose output
-```
-
-All default settings below can be overridden by your own config file.
-Put a `.release.json` file in your project root, and **Release It** will pick it up.
-You can use `--config` if you want to use another path.
-Options can also be set on the command-line (these will have highest priority). Example:
+Any option can also be set on the command-line, and will have highest priority. Example:
 
 ```bash
 release-it minor --src.tagName='v%s' --github.release
 ```
 
-Here is the full list of settings:
+This is the same as in `.release.json`:
 
-```json
+```
 {
-  "non-interactive": false,
-  "dry-run": false,
-  "verbose": false,
-  "force": false,
-  "pkgFiles": ["package.json"],
-  "increment": "patch",
-  "prereleaseId": null,
-  "buildCommand": false,
-  "changelogCommand": "git log --pretty=format:\"* %s (%h)\" [REV_RANGE]",
-  "requireCleanWorkingDir": false,
   "src": {
-    "commitMessage": "Release %s",
-    "tagName": "%s",
-    "tagAnnotation": "Release %s",
-    "pushRepo": null,
-    "beforeStartCommand": false,
-    "beforeStageCommand": false,
-    "afterReleaseCommand": false,
-    "githubAssets": false
-  },
-  "dist": {
-    "repo": false,
-    "stageDir": ".stage",
-    "baseDir": "dist",
-    "files": ["**/*"],
-    "pkgFiles": null,
-    "commitMessage": "Release %s",
-    "tagName": "%s",
-    "tagAnnotation": "Release %s",
-    "beforeStageCommand": false,
-    "afterReleaseCommand": false,
-    "githubAssets": false
-  },
-  "npm": {
-    "publish": false,
-    "publishPath": ".",
-    "tag": "latest",
-    "private": false,
-    "forcePublishSourceRepo": false
+    "tagName": "v%s"
   },
   "github": {
-    "release": false,
-    "releaseName": "Release %s",
-    "preRelease": false,
-    "tokenRef": "GITHUB_TOKEN"
-  },
-  "prompt": {
-    "src": {
-      "status": false,
-      "commit": true,
-      "tag": true,
-      "push": true,
-      "release": true,
-      "publish": false
-    },
-    "dist": {
-      "status": false,
-      "commit": true,
-      "tag": true,
-      "push": true,
-      "release": true,
-      "publish": false
-    }
+    "release": true
   }
 }
 ```
 
-Notes:
+Boolean arguments can be negated by using the `no-` prefix:
 
-* If present, your `"private": true` setting in package.json will be respected and you will not be bothered with the question to publish to npm.
-* If `src.pushRepo` has a falsey value, the default `git push` is used when pushing to the remote.
-Otherwise, it's the url or name of a remote as in `git push <src.pushRepo>`.
-* If `dist.pkgFiles` has a falsey value, it will take the value of `pkgFiles`.
-* In the background, some steps of the distribution repo process are actually executed before you are asked to commit anything
-(also in the source repo), so you know about build, clone, or copy issues as soon as possible.
-* The `prompt` booleans represent the default answers to the interactive questions.
+```bash
+release-it --no-npm.publish
+```
 
-### Command Hooks
+## 🤖 Interactive vs. non-interactive mode
 
-The command hooks are executed from the directory of the `src` or `dist` repository, respectively:
+By default, release-it is interactive and allows you to confirm each task before execution.
 
-* `src.beforeStartCommand` - before version bump
-* `src.beforeStageCommand` and `dist.beforeStageCommand` - before `buildCommand`
+<img src="./assets/release-it.png?raw=true" height="96px">
+
+Once you are confident release-it does the right thing, you can fully automate it by using the `--non-interactive` (or `-n`) option (as demonstrated in the animated image above). An overview of the tasks that will be executed:
+
+Task | Option | Default | Prompt | Default
+:--|:--|:-:|:--|:-:
+Show staged files | - | | `prompt.src.status` | `N`
+Git commit | `src.commit` | `true` | `prompt.src.commit` | `Y`
+Git push | `src.push` | `true` | `prompt.src.push` | `Y`
+Git tag | `src.tag` | `true` | `prompt.src.tag` | `Y`
+GitHub release | `github.release` | `true` | `prompt.src.release` | `Y`
+npm publish | `npm.publish` | `true` | `prompt.src.publish` | `Y`
+
+Note that the `prompt.*` options are used for the default answers in interactive mode. You can still change the answer to either `Y` or `N` as the questions show up.
+
+## 🔗 Command Hooks
+
+The command hooks are executed from the root directory of the `src` or `dist` repository, respectively:
+
+* `src.beforeStartCommand`
 * `buildCommand` - before files are staged for commit
-* `src.afterReleaseCommand` and `dist.afterReleaseCommand` - after release/publish steps
+* `src.afterReleaseCommand`
+* `dist.beforeStageCommand` - before files are staged in dist repo
+* `dist.afterReleaseCommand`
 
 All commands can use configuration variables (like template strings):
 
@@ -194,71 +126,111 @@ All commands can use configuration variables (like template strings):
 "afterReleaseCommand": "echo Successfully released ${version} to ${dist.repo}."
 ```
 
-## Distribution Repository
+## 📡 SSH keys & git remotes
 
-Some projects use a special distribution repository. There might be multiple reasons to do.
+The tool assumes you've configured your GitHub SSH key and Git remotes correctly. In short: you're fine if you can `git push`. Otherwise, the following GitHub help pages might be useful: [SSH](https://help.github.com/articles/connecting-to-github-with-ssh/) and [Managing Remotes](https://help.github.com/categories/managing-remotes/).
 
-* Distribute more "clean" file structures (without unrelated test, manifest, documentation files etc.).
-* Distribute to target specific package managers. One example is the "shims" repositories in
-[https://github.com/components](https://github.com/components) (the actual source files are elsewhere).
-* Distribute just documentation to a Github Pages branch.
-Also see [Using GitHub Pages, the easy way](https://medium.com/@webprolific/using-github-pages-the-easy-way-bb7acc46f45b).
+## ✏️ GitHub Release
 
-Notes:
+See this project's [releases page](https://github.com/webpro/release-it/releases) for an example.
 
-* To release to a separate "distribution repo", set `dist.repo` to a git endpoint (e.g. `"git@github.com:components/ember.git"`).
-* Note that this can also be a branch, possibly of the same source repository, using `#` notation (e.g. `"git@github.com:webpro/release-it.git#gh-pages"`).
-* In case you want to update `dist.repo`, but still want to publish the source repository to npm, make sure to set `"forcePublishSourceRepo": true`.
+To create [GitHub releases](https://help.github.com/articles/creating-releases/):
 
-## GitHub
-
-### SSH keys & git remotes
-
-The tool assumes you've configured your SSH keys and remotes correctly.
-In case you need to configure things for GitHub, the following pages might be of help.
-
-* GitHub Help: [SSH](https://help.github.com/articles/connecting-to-github-with-ssh/)
-* GitHub Help: [Managing Remotes](https://help.github.com/categories/managing-remotes/)
-
-### GitHub Release
-
-To create [GitHub releases](https://help.github.com/articles/creating-releases/),
-you'll need to set `github.release` to `true`,get a [GitHub access token](https://github.com/settings/tokens),
-and make this available as the environment variable defined with `github.tokenRef`. You can set it like this:
+* The `github.release` option must be `true`.
+* Obtain a [GitHub access token](https://github.com/settings/tokens).
+* Make this available as the environment variable defined with `github.tokenRef`. Example:
 
 ```bash
 export GITHUB_TOKEN="f941e0..."
 ```
 
-In non-interactive mode, the release is created only for the source repository.
+### 📦 Release Assets
 
-## What it does
+To upload binary release assets with a GitHub release (such as compiled executables,
+minified scripts, documentation), provide one or more [glob patterns](https://github.com/sindresorhus/globby#readme) for the `github.assets` option. After the release, the assets are available to download from the GitHub release page. Example:
 
-To keep you in control, many steps need your confirmation before execution. This is what happens if you answer "Yes" to each question:
+```json
+"github": {
+  "release": true,
+  "assets": "dist/*.zip"
+}
+```
 
-With the current repository:
+## 🐣 Manage Pre-releases
 
-1. Bump version in `pkgFiles`.
-1. Is `buildCommand` provided? Clean `dist.baseDir` and execute the `buildCommand`.
-1. Commit changes with `src.commitMessage` (`%s` is replaced with the new version).
-1. Tag commit with `src.tagName` (and `src.tagAnnotation`).
-1. Push commit and tag.
-1. Create release on GitHub (with `github.releaseName` and output of `changelogCommand`).
-1. No `dist.repo`? Publish package to npm.
+With release-it, it's easy to create pre-releases: a version of your software that you want to make available, while it's not in the stable semver range yet. Often "alpha", "beta", and "rc" (release candidate) are used as identifier for pre-releases.
 
-Additionally, if a distribution repository is configured:
+For example, if you're working on a new major update for `awesome-pkg` (while the latest release was v1.4.1), and you want others to try a beta version of it:
 
-1. Clone `dist.repo` in `dist.stageDir`.
-1. Copy `dist.files` from `dist.baseDir` to `dist.repo`.
-1. Bump version in `dist.pkgFiles`, commit, tag, push `dist.repo`.
-1. Create release on GitHub (with `github.releaseName` and output of `changelogCommand`).
-1. Publish package to npm.
+```
+release-it major --preRelease=beta
+```
 
-## Credits
+This will tag and release version `2.0.0-beta.0`. This is actually a shortcut for:
+
+```
+release-it premajor --preReleaseId=beta --npm.tag=beta --github.preRelease
+```
+
+Consecutive beta releases (`v2.0.0-beta.1` and so on) are now easy:
+
+```
+release-it --preRelease=beta
+```
+
+Installing the package with npm:
+
+```
+npm install awesome-pkg         # Installs v1.4.1
+npm install awesome-pkg@beta    # Installs v2.0.0-beta.1
+```
+
+You can still override e.g. the npm tag being used:
+
+```
+release-it --preRelease=rc --npm.tag=next
+```
+
+## 🚚 Distribution Repository
+
+Some projects use a distribution repository. Reasons to do this include:
+
+* Distribute to target specific package managers.
+* Distribute to a Github Pages branch (also see [Using GitHub Pages, the easy way](https://medium.com/@webprolific/using-github-pages-the-easy-way-bb7acc46f45b)).
+
+Overall, it comes down to a need to release generated files (such as compiled bundles, documentation) into a separate repository. Some examples include:
+
+* Projects like Ember, Modernizr and Bootstrap are in separate [shim repositories](https://github.com/components).
+* AngularJS maintains a separate [packaged angular repository](https://github.com/angular/bower-angular) for distribution on npm and Bower.
+
+To use this feature, set the `dist.repo` option to a git endpoint. This can be a branch (also of the same source repository), like `"git@github.com:webpro/release-it.git#gh-pages"`. Example:
+
+```json
+"dist": {
+  "repo": "git@github.com:components/ember.git"
+}
+```
+
+The repository will be cloned to `dist.stageDir`, and the `dist.files` (relative to `dist.baseDir`) will be copied from the source repository. The files will then be staged, commited and pushed back to the remote distribution repository.
+
+Make sure to set `dist.github.release` and `dist.npm.publish` to `true` as needed. The `dist.github.*` options will use the `github.*` values as defaults. Idem dito for `dist.npm.*` options, using `npm.*` for default values.
+
+During the release of a source and distribution repository, some "dist" tasks are executed before something is committed to the source repo. This is to make sure you find out about errors (e.g. while cloning or copying files) as soon as possible, and not after a release for the source repository first.
+
+## 📝 Notes
+
+* The `"private": true` setting in package.json will be respected and the package won't be published to npm.
+* You can use `src.pushRepo` option to set an alternative url or name of a remote as in `git push <src.pushRepo>`. By default this is `null` and  `git push` is used when pushing to the remote.
+
+## 🎁 Contributing
+
+Please see [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+## ❤️ Credits
 
 Major dependencies:
 
-* [ShellJS](http://documentup.com/shelljs/shelljs)
+* [ShellJS](https://documentup.com/shelljs/shelljs)
 * [Inquirer.js](https://github.com/SBoudrias/Inquirer.js)
 * [node-github](https://github.com/mikedeboer/node-github)
 
@@ -267,16 +239,6 @@ The following Grunt plugins have been a source of inspiration:
 * [grunt-release](https://github.com/geddski/grunt-release)
 * [grunt-release-component](https://github.com/walmartlabs/grunt-release-component)
 
-## Why YA...
-
-Why did I need to create yet another "release" tool/plugin? I think this tool stands out:
-
-* As a user-friendly, stand-alone CLI tool.
-* Making it simple to release the current project you're working at.
-* Working without any configuration, but also provides many options.
-* Releasing a separate distribution repository (in a single run).
-* Being as quiet or verbose as you want it to be.
-
-## License
+## 🎓 License
 
 [MIT](http://webpro.mit-license.org/)
