@@ -9,19 +9,44 @@ CLI release tool for Git repos and npm packages.
 
 **Release It!** automates the tedious tasks of software releases:
 
-<img align="right" src="./assets/release-it.gif?raw=true" height="148px">
+<img align="right" src="./assets/release-it.gif?raw=true" height="148">
 
 * Execute build commands
 * Bump version (in e.g. `package.json`)
 * Generate changelog
 * Git commit, tag, push
-* [Create release at GitHub](#github-release)
-* [Upload assets to GitHub release](#release-assets)
+* [Create release at GitHub](#️-github-release)
+* [Upload assets to GitHub release](#-release-assets)
 * Publish to npm
-* [Manage pre-releases](#manage-pre-releases)
-* [Push build artefacts to a separate repository or branch](#distribution-repository)
+* [Manage pre-releases](#-manage-pre-releases)
+* [Push build artefacts to a separate repository or branch](#-distribution-repository)
 
 Updating from v2 to v3 should be painless. See [v3.0.0 release notes](https://github.com/webpro/release-it/releases/tag/3.0.0)!
+
+[![Build Status](https://travis-ci.org/webpro/release-it.svg?branch=master)](https://travis-ci.org/webpro/release-it)
+[![npm version](https://badge.fury.io/js/release-it.svg)](https://badge.fury.io/js/release-it)
+[![Greenkeeper badge](https://badges.greenkeeper.io/webpro/release-it.svg)](https://greenkeeper.io/)
+
+<details>
+ <summary><strong>Table of Contents</strong> (click to expand)</summary>
+
+* [Installation](#-installation)
+* [Usage](#️-usage)
+* [Configuration](#️-configuration)
+* [Interactive vs. non-interactive mode](#-interactive-vs-non-interactive-mode)
+* [Command Hooks](#-command-hooks)
+* [SSH keys & git remotes](#-ssh-keys-git-remotes)
+* [GitHub Release](#️-github-release)
+* [Release Assets](#-release-assets)
+* [Manage Pre-releases](#-manage-pre-releases)
+* [Distribution Repository](#-distribution-repository)
+* [Notes](#-notes)
+* [Resources](#-resources)
+* [Contributing](#-contributing)
+* [Credits](#️-credits)
+* [License](#-license)
+</details>
+
 
 ## 💾 Installation
 
@@ -44,16 +69,7 @@ release-it minor
 release-it 0.8.3
 ```
 
-Create a pre-release using `prerelease`, `prepatch`, `preminor`, or `premajor`:
-
-```bash
-release-it premajor --prereleaseId="beta"
-release-it premajor
-```
-
-The first example would increment from e.g. `1.0.6` to `2.0.0-beta.0`, the second from `2.0.0-beta.0` to `2.0.0-beta.1`.
-
-See [node-semver](https://github.com/npm/node-semver#readme) for more details.
+See [manage pre-releases](#-manage-pre-releases) for versions like `1.0.0-beta.2` and `npm install my-package@next`.
 
 You can also do a "dry run", which won't write/touch anything, but does output the commands it would execute, and show the interactivity:
 
@@ -65,15 +81,7 @@ release-it --dry-run
 
 Out of the box, release-it has sane defaults, and plenty of options to configure it.
 
-All [default settings](conf/release-it.json) can be overridden with a config file. Put a `.release-it.json` file in the project root, and it will be picked up. You can use `--config` if you want to use another path for this file.
-
-Any option can also be set on the command-line, and will have highest priority. Example:
-
-```bash
-release-it minor --src.tagName='v%s' --github.release
-```
-
-This is the same as in `.release.json`:
+All [default settings](conf/release-it.json) can be overridden with a config file. Put the options to override in `.release-it.json` in the project root. You can use `--config` if you want to use another path for this file. Example:
 
 ```
 {
@@ -86,6 +94,12 @@ This is the same as in `.release.json`:
 }
 ```
 
+Any option can also be set on the command-line, and will have highest priority. Example:
+
+```bash
+release-it minor --src.tagName='v%s' --github.release
+```
+
 Boolean arguments can be negated by using the `no-` prefix:
 
 ```bash
@@ -96,13 +110,14 @@ release-it --no-npm.publish
 
 By default, release-it is interactive and allows you to confirm each task before execution.
 
-<img src="./assets/release-it.png?raw=true" height="96px">
+<img src="./assets/release-it.png?raw=true" height="148">
 
 Once you are confident release-it does the right thing, you can fully automate it by using the `--non-interactive` (or `-n`) option (as demonstrated in the animated image above). An overview of the tasks that will be executed:
 
 Task | Option | Default | Prompt | Default
 :--|:--|:-:|:--|:-:
-Show staged files | - | | `prompt.src.status` | `N`
+Ready (confirm version) | N/A | N/A | - | `Y`
+Show staged files | N/A | N/A | `prompt.src.status` | `N`
 Git commit | `src.commit` | `true` | `prompt.src.commit` | `Y`
 Git push | `src.push` | `true` | `prompt.src.push` | `Y`
 Git tag | `src.tag` | `true` | `prompt.src.tag` | `Y`
@@ -130,7 +145,7 @@ All commands can use configuration variables (like template strings):
 
 ## 📡 SSH keys & git remotes
 
-The tool assumes you've configured your GitHub SSH key and Git remotes correctly. In short: you're fine if you can `git push`. Otherwise, the following GitHub help pages might be useful: [SSH](https://help.github.com/articles/connecting-to-github-with-ssh/) and [Managing Remotes](https://help.github.com/categories/managing-remotes/).
+The tool assumes you've configured your SSH key and Git remotes correctly. In short: you're fine if you can `git push`. Otherwise, the following GitHub help pages might be useful: [SSH](https://help.github.com/articles/connecting-to-github-with-ssh/) and [Managing Remotes](https://help.github.com/categories/managing-remotes/).
 
 ## ✏️ GitHub Release
 
@@ -193,6 +208,8 @@ You can still override e.g. the npm tag being used:
 release-it --preRelease=rc --npm.tag=next
 ```
 
+See [semver.org](http://semver.org) for more details.
+
 ## 🚚 Distribution Repository
 
 Some projects use a distribution repository. Reasons to do this include:
@@ -223,6 +240,11 @@ During the release of a source and distribution repository, some "dist" tasks ar
 
 * The `"private": true` setting in package.json will be respected and the package won't be published to npm.
 * You can use `src.pushRepo` option to set an alternative url or name of a remote as in `git push <src.pushRepo>`. By default this is `null` and  `git push` is used when pushing to the remote.
+
+## 📚 Resources
+
+* [semver.org](http://semver.org)
+* [The npm Blog — Publishing what you mean to publish](http://blog.npmjs.org/post/165769683050/publishing-what-you-mean-to-publish)
 
 ## 🎁 Contributing
 
